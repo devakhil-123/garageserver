@@ -1,16 +1,31 @@
 from django.shortcuts import render
-from .serializers import CustomerSerializer,ServiceSerializer
+from .serializers import CustomerSerializer,ServiceSerializer,UserSerializer
 from .models import CustomerCard
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet,ViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework import permissions
+from rest_framework import authentication
 
 # Create your views here.
+
+
+
+class UserViewSet(ViewSet):
+    def create(self,request,*args,**kwargs):
+        ser=UserSerializer(data=request.data)
+        if ser.is_valid():
+            ser.save()
+            return Response(data=ser.data,status=status.HTTP_201_CREATED)
+        return Response(data=ser.errors,status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class CustomerModelViewSet(ModelViewSet):
     serializer_class=CustomerSerializer
     queryset=CustomerCard.objects.all()
+    permission_classes=[permissions.IsAuthenticated]
+    authentication_classes=[authentication.TokenAuthentication]
 
 
     @action(methods=["POST"],detail=True)
